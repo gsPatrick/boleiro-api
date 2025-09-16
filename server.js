@@ -9,8 +9,12 @@ const app = express();
 const PORT = process.env.API_PORT || 3001;
 
 // Middlewares
-app.use(cors()); // Permite requisições de outras origens (ex: seu frontend)
-app.use(express.json()); // Permite que o express entenda JSON no corpo das requisições
+app.use(cors({
+  origin: '*',             // Libera para qualquer origem
+  methods: ['GET','POST','PUT','DELETE','PATCH','OPTIONS'], // Libera todos métodos
+  allowedHeaders: ['Content-Type', 'Authorization']          // Libera cabeçalhos principais
+}));
+app.use(express.json());
 
 // Rota principal da API
 app.use('/api', mainRouter);
@@ -20,12 +24,9 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log('Conexão com o PostgreSQL estabelecida com sucesso.');
     
-    // Sincroniza os modelos com o banco de dados.
-    // `force: false` para não apagar os dados existentes.
     await sequelize.sync({ force: false });
     console.log('Modelos sincronizados com o banco de dados.');
 
-    // Inicia o serviço para garantir que o link ID 1 exista
     const linkService = require('./src/features/link/link.service');
     await linkService.getLink();
     console.log('Link inicial garantido no banco de dados.');
